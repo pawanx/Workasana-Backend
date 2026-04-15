@@ -7,6 +7,7 @@ const userRoutes = require("./routes/userRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const { initializeDB } = require("./db/db.connect");
 require("dotenv").config();
+const cors = require("cors");
 const express = require("express");
 app.use(
   cors({
