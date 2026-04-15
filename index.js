@@ -9,13 +9,13 @@ const { initializeDB } = require("./db/db.connect");
 require("dotenv").config();
 const cors = require("cors");
 const express = require("express");
+const app = express();
+
 app.use(
   cors({
     origin: "*",
   }),
 );
-
-const app = express();
 app.use(express.json());
 app.use(cors());
 
