@@ -4,6 +4,11 @@ const auth = require("../middleware/auth");
 
 // CREATE
 taskRouter.post("/", auth, async (req, res) => {
+  const { name, project, team } = req.body;
+
+  if (!name || !project || !team) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
   try {
     const task = await Task.create(req.body);
     res.json(task);
@@ -22,7 +27,7 @@ taskRouter.get("/", auth, async (req, res) => {
     if (team) filter.team = team;
     if (status) filter.status = status;
     if (project) filter.project = project;
-    if (owner) filter.owners = owner;
+    if (owner) filter.owners = { $in: [owner] };
 
     const tasks = await Task.find(filter)
       .populate("team", "name")
@@ -32,32 +37,40 @@ taskRouter.get("/", auth, async (req, res) => {
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch tasks" });
+    console.log("Fetch tasks error", error);
   }
 });
 
 // UPDATE
-taskRouter.put("/:id", auth, async (req, res) => {
+taskRouter.patch("/:id", auth, async (req, res) => {
   try {
     const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
+
+    if (!updatedTask) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
     res.json(updatedTask);
   } catch (error) {
     res.status(500).json({ message: "Failed to update task" });
+    console.log("Delete task error", error);
   }
 });
 
 // DELETE
 taskRouter.delete("/:id", auth, async (req, res) => {
   try {
-    const {id} = req.params;
-    const deletedTask = await Task.findByIdAndDelete(id)
+    const deletedTask = await Task.findByIdAndDelete(req.params.id);
 
-    if(!deletedTask) return res.status(404).json({message : "No task found."})
-    
+    if (!deletedTask)
+      return res.status(404).json({ message: "No task found." });
+
     res.json({ message: "Task deleted Successfully.", deletedTask });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete task" });
+    console.log("Delete task error", error);
   }
 });
 
