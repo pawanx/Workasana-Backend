@@ -53,4 +53,35 @@ teamRouter.patch("/:id/add-member", auth, async (req, res) => {
     res.status(500).json({ message: "Failed to add member" });
   }
 });
+
+// REMOVE MEMBER
+teamRouter.patch("/:id/remove-member", auth, async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const team = await Team.findById(req.params.id);
+
+    if (!team) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    // remove user
+    team.members = team.members.filter(
+      (memberId) => memberId.toString() !== userId,
+    );
+
+    await team.save();
+
+    // return populated team
+    const updatedTeam = await Team.findById(req.params.id).populate(
+      "members",
+      "name email",
+    );
+
+    res.json(updatedTeam);
+  } catch (error) {
+    console.log("Remove member error", error);
+    res.status(500).json({ message: "Failed to remove member" });
+  }
+});
 module.exports = teamRouter;
