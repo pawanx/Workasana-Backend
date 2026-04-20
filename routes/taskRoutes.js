@@ -11,7 +11,11 @@ taskRouter.post("/", auth, async (req, res) => {
   }
   try {
     const task = await Task.create(req.body);
-    res.json(task);
+    const populatedTask = await Task.findById(task._id)
+      .populate("team", "name")
+      .populate("project", "name")
+      .populate("owners", "name");
+    res.json(populatedTask);
   } catch (error) {
     res.status(500).json({ message: "Failed to create task" });
     console.log("Task Post error", error);
